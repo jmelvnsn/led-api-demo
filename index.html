@@ -55,12 +55,16 @@
         }
 
         .led-display {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             text-align: center;
         }
 
         .led-circle {
             width: 200px;
             height: 200px;
+            border: 2px solid black;
             border-radius: 50%;
             margin: 0 auto 30px;
             position: relative;
@@ -78,7 +82,7 @@
         }
 
         .led-info {
-            background: #f8f9fa;
+            line-height: 1.5;
             padding: 20px;
             border-radius: 15px;
             margin-top: 20px;
@@ -259,29 +263,29 @@
                 <div class="led-circle" id="ledCircle"></div>
                 <div class="led-info">
                     <h3>LED Status</h3>
-                    <p><strong>Brightness:</strong> <span id="brightnessValue">50%</span></p>
-                    <p><strong>Color:</strong> <span id="colorValue">#84ac54</span></p>
+                    <p><strong>Brightness:</strong> <span id="brightnessValue">100%</span></p>
+                    <p><strong>Color:</strong> <span id="colorValue">#b2ff33</span></p>
                     <p><strong>Behavior:</strong> <span id="behaviorValue">solid</span></p>
                 </div>
             </div>
 
             <div class="controls">
                 <div class="control-section">
-                    <h3>💡 Brightness Control</h3>
+                    <h3>Brightness Control</h3>
                     <div class="slider-container">
-                        <input type="range" min="0" max="100" value="50" class="slider" id="brightnessSlider">
-                        <div class="value-display">Value: <span id="brightnessDisplay">50</span>%</div>
+                        <input type="range" min="0" max="100" value="100" class="slider" id="brightnessSlider">
+                        <div class="value-display">Value: <span id="brightnessDisplay">100</span>%</div>
                     </div>
                 </div>
 
                 <div class="control-section">
-                    <h3>🎨 Color Control</h3>
-                    <input type="color" class="color-picker" id="colorPicker" value="#84ac54">
-                    <div class="value-display">Hex: <span id="colorDisplay">#84ac54</span></div>
+                    <h3>Color Control</h3>
+                    <input type="color" class="color-picker" id="colorPicker" value="#b2ff33">
+                    <div class="value-display">Hex: <span id="colorDisplay">#b2ff33</span></div>
                 </div>
 
                 <div class="control-section">
-                    <h3>✨ Behavior Control</h3>
+                    <h3>Behavior Control</h3>
                     <div class="behavior-buttons">
                         <button class="behavior-btn active" data-behavior="solid">Solid</button>
                         <button class="behavior-btn" data-behavior="pulse">Pulse</button>
@@ -313,7 +317,7 @@
                         </div>
                         <div>
                             <strong>Body:</strong><br>
-                            <code>{ "color": "<span id="apiColor">#84ac54</span>" }</code>
+                            <code>{ "color": "<span id="apiColor">##2ff33</span>" }</code>
                         </div>
                         <div class="value-display">Format: Hex color code</div>
                     </div>
@@ -339,8 +343,8 @@
         class LEDController {
             constructor() {
                 this.state = {
-                    brightness: 50,
-                    color: '#84ac54',
+                    brightness: 100,
+                    color: '#b2ff33',
                     behavior: 'solid'
                 };
                 
