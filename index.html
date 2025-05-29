@@ -344,6 +344,15 @@
                     behavior: 'solid'
                 };
                 
+                // Wait for DOM to be fully loaded before initializing
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => this.init());
+                } else {
+                    this.init();
+                }
+            }
+
+            init() {
                 this.elements = {
                     ledCircle: document.getElementById('ledCircle'),
                     brightnessSlider: document.getElementById('brightnessSlider'),
@@ -351,11 +360,16 @@
                     behaviorButtons: document.querySelectorAll('.behavior-btn')
                 };
                 
-                this.init();
-            }
-
-            init() {
+                // Verify all elements exist before proceeding
+                if (!this.elements.ledCircle || !this.elements.brightnessSlider || 
+                    !this.elements.colorPicker || !this.elements.behaviorButtons.length) {
+                    console.warn('Some DOM elements not found. Retrying in 100ms...');
+                    setTimeout(() => this.init(), 100);
+                    return;
+                }
+                
                 this.updateLED();
+                this.updateUI();
                 this.bindEvents();
             }
 
@@ -423,24 +437,32 @@
             updateUI() {
                 const { brightness, color, behavior } = this.state;
                 
-                // Update display values
-                document.getElementById('brightnessValue').textContent = `${brightness}%`;
-                document.getElementById('colorValue').textContent = color;
-                document.getElementById('behaviorValue').textContent = behavior;
+                // Update display values with null checks
+                const brightnessValue = document.getElementById('brightnessValue');
+                const colorValue = document.getElementById('colorValue');
+                const behaviorValue = document.getElementById('behaviorValue');
+                const brightnessDisplay = document.getElementById('brightnessDisplay');
+                const colorDisplay = document.getElementById('colorDisplay');
+                const apiBrightness = document.getElementById('apiBrightness');
+                const apiColor = document.getElementById('apiColor');
+                const apiBehavior = document.getElementById('apiBehavior');
                 
-                document.getElementById('brightnessDisplay').textContent = brightness;
-                document.getElementById('colorDisplay').textContent = color;
-                
-                // Update API endpoint displays
-                document.getElementById('apiBrightness').textContent = brightness;
-                document.getElementById('apiColor').textContent = color;
-                document.getElementById('apiBehavior').textContent = behavior;
+                if (brightnessValue) brightnessValue.textContent = `${brightness}%`;
+                if (colorValue) colorValue.textContent = color;
+                if (behaviorValue) behaviorValue.textContent = behavior;
+                if (brightnessDisplay) brightnessDisplay.textContent = brightness;
+                if (colorDisplay) colorDisplay.textContent = color;
+                if (apiBrightness) apiBrightness.textContent = brightness;
+                if (apiColor) apiColor.textContent = color;
+                if (apiBehavior) apiBehavior.textContent = behavior;
             }
 
             async sendAPIRequest(endpoint, data) {
                 // Simulate API call with visual feedback
                 const statusElement = document.getElementById(`${endpoint}Status`);
-                statusElement.className = 'status-indicator';
+                if (statusElement) {
+                    statusElement.className = 'status-indicator';
+                }
                 
                 // Simulate network delay
                 await new Promise(resolve => setTimeout(resolve, 200));
@@ -454,12 +476,16 @@
                     // });
                     
                     console.log(`API Call: PUT /api/led/${endpoint}`, JSON.stringify(data, null, 2));
-                    statusElement.classList.add('status-success');
+                    if (statusElement) {
+                        statusElement.classList.add('status-success');
+                    }
                     
                     return { success: true, data };
                 } catch (error) {
                     console.error(`API Error: ${endpoint}`, error);
-                    statusElement.classList.add('status-error');
+                    if (statusElement) {
+                        statusElement.classList.add('status-error');
+                    }
                     return { success: false, error };
                 }
             }
