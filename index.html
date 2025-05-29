@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED API Control Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #1a1a1a, #2c2c2c);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 3px solid #84ac54;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .led-display {
+            text-align: center;
+        }
+
+        .led-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .led-circle.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .led-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .control-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #84ac54;
+        }
+
+        .control-section h3 {
+            margin-bottom: 15px;
+            color: #1a1a1a;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .slider-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #84ac54;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .behavior-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .behavior-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #84ac54;
+            background: white;
+            color: #84ac54;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+        }
+
+        .behavior-btn.active {
+            background: #84ac54;
+            color: white;
+        }
+
+        .behavior-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(132, 172, 84, 0.3);
+        }
+
+        .api-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .api-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .endpoint {
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            border-top: 3px solid #84ac54;
+        }
+
+        .endpoint h4 {
+            color: #bce46c;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .endpoint-url {
+            background: #2c2c2c;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method.put { background: #84ac54; }
+        .method.get { background: #bce46c; color: #1a1a1a; }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .status-success { background: #84ac54; }
+        .status-error { background: #e74c3c; }
+
+        .value-display {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .led-circle {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LED API Control Demo</h1>
+            <p>Interactive demonstration of REST API endpoints for embedded LED control</p>
+        </div>
+
+        <div class="main-content">
+            <div class="led-display">
+                <div class="led-circle" id="ledCircle"></div>
+                <div class="led-info">
+                    <h3>LED Status</h3>
+                    <p><strong>Brightness:</strong> <span id="brightnessValue">50%</span></p>
+                    <p><strong>Color:</strong> <span id="colorValue">#84ac54</span></p>
+                    <p><strong>Behavior:</strong> <span id="behaviorValue">solid</span></p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-section">
+                    <h3>💡 Brightness Control</h3>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="100" value="50" class="slider" id="brightnessSlider">
+                        <div class="value-display">Value: <span id="brightnessDisplay">50</span>%</div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🎨 Color Control</h3>
+                    <input type="color" class="color-picker" id="colorPicker" value="#84ac54">
+                    <div class="value-display">Hex: <span id="colorDisplay">#84ac54</span></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>✨ Behavior Control</h3>
+                    <div class="behavior-buttons">
+                        <button class="behavior-btn active" data-behavior="solid">Solid</button>
+                        <button class="behavior-btn" data-behavior="pulse">Pulse</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-section">
+                <h2>🔧 API Endpoints</h2>
+                <div class="api-endpoints">
+                    <div class="endpoint">
+                        <h4>Brightness Control</h4>
+                        <div class="endpoint-url">
+                            <span class="method put">PUT</span>/api/led/brightness
+                            <span class="status-indicator status-success" id="brightnessStatus"></span>
+                        </div>
+                        <div>
+                            <strong>Body:</strong><br>
+                            <code>{ "brightness": <span id="apiB rightness">50</span> }</code>
+                        </div>
+                        <div class="value-display">Range: 0-100 (percentage)</div>
+                    </div>
+
+                    <div class="endpoint">
+                        <h4>Color Control</h4>
+                        <div class="endpoint-url">
+                            <span class="method put">PUT</span>/api/led/color
+                            <span class="status-indicator status-success" id="colorStatus"></span>
+                        </div>
+                        <div>
+                            <strong>Body:</strong><br>
+                            <code>{ "color": "<span id="apiColor">#84ac54</span>" }</code>
+                        </div>
+                        <div class="value-display">Format: Hex color code</div>
+                    </div>
+
+                    <div class="endpoint">
+                        <h4>Behavior Control</h4>
+                        <div class="endpoint-url">
+                            <span class="method put">PUT</span>/api/led/behavior
+                            <span class="status-indicator status-success" id="behaviorStatus"></span>
+                        </div>
+                        <div>
+                            <strong>Body:</strong><br>
+                            <code>{ "behavior": "<span id="apiBehavior">solid</span>" }</code>
+                        </div>
+                        <div class="value-display">Options: "solid" | "pulse"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LEDController {
+            constructor() {
+                this.state = {
+                    brightness: 50,
+                    color: '#84ac54',
+                    behavior: 'solid'
+                };
+                
+                this.elements = {
+                    ledCircle: document.getElementById('ledCircle'),
+                    brightnessSlider: document.getElementById('brightnessSlider'),
+                    colorPicker: document.getElementById('colorPicker'),
+                    behaviorButtons: document.querySelectorAll('.behavior-btn')
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.updateLED();
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                // Brightness control
+                this.elements.brightnessSlider.addEventListener('input', (e) => {
+                    this.updateBrightness(parseInt(e.target.value));
+                });
+
+                // Color control
+                this.elements.colorPicker.addEventListener('change', (e) => {
+                    this.updateColor(e.target.value);
+                });
+
+                // Behavior control
+                this.elements.behaviorButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const behavior = e.target.dataset.behavior;
+                        this.updateBehavior(behavior);
+                    });
+                });
+            }
+
+            async updateBrightness(brightness) {
+                this.state.brightness = brightness;
+                await this.sendAPIRequest('brightness', { brightness });
+                this.updateLED();
+                this.updateUI();
+            }
+
+            async updateColor(color) {
+                this.state.color = color;
+                await this.sendAPIRequest('color', { color });
+                this.updateLED();
+                this.updateUI();
+            }
+
+            async updateBehavior(behavior) {
+                this.state.behavior = behavior;
+                await this.sendAPIRequest('behavior', { behavior });
+                this.updateLED();
+                this.updateUI();
+                
+                // Update button states
+                this.elements.behaviorButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.behavior === behavior);
+                });
+            }
+
+            updateLED() {
+                const { brightness, color, behavior } = this.state;
+                const opacity = brightness / 100;
+                
+                this.elements.ledCircle.style.backgroundColor = color;
+                this.elements.ledCircle.style.opacity = opacity;
+                this.elements.ledCircle.style.boxShadow = `
+                    0 0 ${brightness}px ${color}40,
+                    0 10px 30px rgba(0,0,0,0.2)
+                `;
+                
+                // Apply behavior
+                this.elements.ledCircle.classList.toggle('pulse', behavior === 'pulse');
+            }
+
+            updateUI() {
+                const { brightness, color, behavior } = this.state;
+                
+                // Update display values
+                document.getElementById('brightnessValue').textContent = `${brightness}%`;
+                document.getElementById('colorValue').textContent = color;
+                document.getElementById('behaviorValue').textContent = behavior;
+                
+                document.getElementById('brightnessDisplay').textContent = brightness;
+                document.getElementById('colorDisplay').textContent = color;
+                
+                // Update API endpoint displays
+                document.getElementById('apiBrightness').textContent = brightness;
+                document.getElementById('apiColor').textContent = color;
+                document.getElementById('apiBehavior').textContent = behavior;
+            }
+
+            async sendAPIRequest(endpoint, data) {
+                // Simulate API call with visual feedback
+                const statusElement = document.getElementById(`${endpoint}Status`);
+                statusElement.className = 'status-indicator';
+                
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                try {
+                    // Mock API response - in real implementation, this would be:
+                    // const response = await fetch(`/api/led/${endpoint}`, {
+                    //     method: 'PUT',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify(data)
+                    // });
+                    
+                    console.log(`API Call: PUT /api/led/${endpoint}`, JSON.stringify(data, null, 2));
+                    statusElement.classList.add('status-success');
+                    
+                    return { success: true, data };
+                } catch (error) {
+                    console.error(`API Error: ${endpoint}`, error);
+                    statusElement.classList.add('status-error');
+                    return { success: false, error };
+                }
+            }
+        }
+
+        // Initialize the LED controller when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new LEDController();
+        });
+    </script>
+</body>
+</html>
